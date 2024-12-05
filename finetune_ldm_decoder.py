@@ -73,6 +73,7 @@ def get_parser():
     aa("--output_dir", type=str, default="output/", help="Output directory for logs and images (Default: /output)")
     aa("--seed", type=int, default=0)
     aa("--debug", type=utils.bool_inst, default=False, help="Debug mode")
+    aa("--bit-logic", type=int, default=0, help="0: Original, 1: Randomized")
 
     return parser
 
@@ -249,6 +250,8 @@ def train(data_loader: Iterable, optimizer: torch.optim.Optimizer, loss_w: Calla
     base_lr = optimizer.param_groups[0]["lr"]
     for ii, imgs in enumerate(metric_logger.log_every(data_loader, params.log_freq, header)):
         imgs = imgs.to(device)
+        if params.bit_logic == 1:
+            key = torch.randint(0, 2, (1, key.shape[1])) # all bits are random, but same across images per iteration
         keys = key.repeat(imgs.shape[0], 1)
         
         utils.adjust_learning_rate(optimizer, ii, params.steps, params.warmup_steps, base_lr)
